@@ -66,7 +66,7 @@ const PROJECT = "profitlens";
       const data = await resp.json();
       document.getElementById('totalCount').textContent = data.length;
     }
-  } catch(e) { document.getElementById('totalCount').textContent = '50+'; }
+  } catch(e) { document.getElementById('totalCount').textContent = '0'; }
 })();
 
 async function handleSubmit() {
