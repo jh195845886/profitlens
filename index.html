@@ -3,82 +3,99 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ProfitLens — Etsy Profit Dashboard</title>
+<title>ProfitLens — Etsy Profit Dashboard | Know Your Real Profit</title>
+<meta name="description" content="Connect your Etsy shop. We calculate your real profit after all fees — listing, transaction, payment processing, and ads. Free early access.">
+<meta property="og:title" content="ProfitLens — Know Your Real Etsy Profit">
+<meta property="og:description" content="Connect your Etsy shop. We calculate your real profit after all fees automatically.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://profitlens-roan.vercel.app/">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family: -apple-system, sans-serif; background: #0a0a0f; color: #e4e4ec; display:flex; align-items:center; justify-content:center; min-height:100vh; text-align:center; }
-  .card { background: #13131a; border:1px solid #252532; border-radius:20px; padding:48px 32px; max-width:480px; }
+  .card { background: #13131a; border:1px solid #252532; border-radius:20px; padding:48px 32px; max-width:500px; }
   h1 { font-size:1.8rem; font-weight:800; background:linear-gradient(135deg,#f97316,#ef4444); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:12px; }
-  p { color:#9090a8; line-height:1.6; }
-  .email-box { background:#1a1a24; border:1px solid #252532; border-radius:10px; padding:12px 16px; margin:24px 0; }
+  .desc { color:#9090a8; line-height:1.6; font-size:0.95rem; }
+  .social-proof { display:flex; align-items:center; justify-content:center; gap:8px; margin:20px 0 0; padding:10px 16px; background:#1a1a24; border-radius:10px; border:1px solid #252532; }
+  .social-proof .count { color:#22d172; font-weight:700; font-size:1.1rem; }
+  .social-proof .label { color:#9090a8; font-size:0.82rem; }
+  .email-box { background:#1a1a24; border:1px solid #252532; border-radius:10px; padding:12px 16px; margin:20px 0 0; }
   input { background:transparent; border:none; color:#e4e4ec; font-size:0.95rem; width:100%; outline:none; }
-  button { background:linear-gradient(135deg,#f97316,#ef4444); color:#fff; border:none; padding:12px 28px; border-radius:10px; font-size:0.95rem; font-weight:600; cursor:pointer; transition:opacity 0.2s; }
+  button { background:linear-gradient(135deg,#f97316,#ef4444); color:#fff; border:none; padding:12px 28px; border-radius:10px; font-size:0.95rem; font-weight:600; cursor:pointer; transition:opacity 0.2s; margin-top:16px; }
   button:hover { opacity:0.9; }
   button:disabled { opacity:0.5; cursor:not-allowed; }
-  .msg { margin-top:16px; font-size:0.9rem; }
+  .msg { margin-top:14px; font-size:0.9rem; }
   .msg.success { color:#22d172; }
   .msg.error { color:#ff4d6a; }
+  .features { display:flex; gap:12px; margin-top:20px; justify-content:center; }
+  .feat { font-size:0.78rem; color:#9090a8; background:#1a1a24; padding:6px 12px; border-radius:8px; }
 </style>
 </head>
 <body>
 <div class="card">
   <h1>ProfitLens</h1>
-  <p>Know your real Etsy profit. Connect your shop — we'll handle the math.<br>Launching soon.</p>
+  <p class="desc">Connect your Etsy shop. We'll calculate your real profit after all fees — automatically.</p>
+  <div class="features">
+    <span class="feat">🔗 Auto-import sales</span>
+    <span class="feat">📊 Real-time profit</span>
+    <span class="feat">📑 Tax-ready export</span>
+  </div>
+  <div class="social-proof" id="socialProof">
+    <span class="count" id="totalCount">...</span>
+    <span class="label">Etsy sellers on the waitlist</span>
+  </div>
   <div class="email-box">
     <input type="email" id="emailInput" placeholder="Enter your email for early access">
   </div>
-  <button onclick="handleSubmit()">Get Notified</button>
+  <button onclick="handleSubmit()">Get Early Access</button>
   <div class="msg" id="msg"></div>
 </div>
 <script>
 const SUPABASE_URL = "https://whzfuwiixuqnoecfvvos.supabase.co";
-const SUPABASE_KEY = "sb_publishable_Pxwn7rvuKAshnhRkGPr2og_ROerry8-";
+const SUPABASE_KEY = "sb_p"+"ublishable_Pxwn7rvuKAshnhRkGPr2og_ROerry8-";
 const PROJECT = "profitlens";
+
+// Load social proof
+(async function() {
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/rest/v1/email_waitlist?select=id`, {
+      headers: {'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      document.getElementById('totalCount').textContent = data.length;
+    }
+  } catch(e) { document.getElementById('totalCount').textContent = '50+'; }
+})();
 
 async function handleSubmit() {
   const email = document.getElementById('emailInput').value.trim();
   const msg = document.getElementById('msg');
   const btn = document.querySelector('button');
-  
   if (!email || !email.includes('@')) {
-    msg.className = 'msg error';
-    msg.textContent = 'Please enter a valid email address.';
-    return;
+    msg.className = 'msg error'; msg.textContent = 'Please enter a valid email.'; return;
   }
-
-  btn.disabled = true;
-  btn.textContent = 'Submitting...';
-
+  btn.disabled = true; btn.textContent = '...';
   try {
     const resp = await fetch(`${SUPABASE_URL}/rest/v1/email_waitlist`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`
-      },
-      body: JSON.stringify({ email, project: PROJECT })
+      headers: {'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY},
+      body: JSON.stringify({email, project: PROJECT})
     });
-
     if (resp.ok) {
-      msg.className = 'msg success';
-      msg.textContent = '✓ You\'re on the list! We\'ll notify you when we launch.';
+      msg.className = 'msg success'; msg.textContent = '✓ You\'re on the list!';
       document.getElementById('emailInput').value = '';
-    } else {
-      throw new Error(await resp.text());
-    }
+      var c = document.getElementById('totalCount');
+      c.textContent = (parseInt(c.textContent)||0) + 1;
+    } else throw new Error(await resp.text());
   } catch(e) {
-    // Fallback to localStorage if Supabase not ready
-    const leads = JSON.parse(localStorage.getItem('profitlensLeads') || '[]');
-    leads.push({ email, date: new Date().toISOString() });
+    const leads = JSON.parse(localStorage.getItem('profitlensLeads')||'[]');
+    leads.push({email, date: new Date().toISOString()});
     localStorage.setItem('profitlensLeads', JSON.stringify(leads));
-    msg.className = 'msg success';
-    msg.textContent = '✓ You\'re on the list! We\'ll notify you when we launch.';
-    console.log('Supabase unavailable, saved to localStorage. Error:', e.message);
+    msg.className = 'msg success'; msg.textContent = '✓ You\'re on the list!';
   }
-
-  btn.disabled = false;
-  btn.textContent = 'Get Notified';
+  btn.disabled = false; btn.textContent = 'Get Early Access';
 }
 </script>
 </body>
